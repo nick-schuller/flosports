@@ -40,7 +40,7 @@ class WatchSessionController extends Controller
 
         return response()->json([
             'session' => $session,
-            'eventCountForSession' => $eventsForSession,
+            'eventsReceivedForSession' => $eventsForSession,
         ]);
     }
 }

@@ -22,7 +22,7 @@ Route::prefix('v1')->group(function () {
     
     // Watch session routing
     // Get active session count for an event
-    Route::get('watch-sessions/{eventId}/active-count', [WatchSessionController::class, 'activeCount']);
+    Route::get('watch-sessions/active-count/{eventId}/', [WatchSessionController::class, 'activeCount']);
 
     // Get session details for a given session ID
     Route::get('watch-sessions/{sessionId}', [WatchSessionController::class, 'show']);
