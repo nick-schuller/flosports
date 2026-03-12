@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\WatchSession;
 use Carbon\Carbon;
 
 class EventController extends Controller
@@ -49,28 +50,59 @@ class EventController extends Controller
         }
 
         $eventType = $data['eventType'];
+        $now = now();
 
-        // Do something with the actual eventType instead of just creating a new entry for it
+        // Upsert watch session for sessionId
+        $watchSession = WatchSession::firstOrNew(
+            ['sessionId' => (string) $data['sessionId']],
+            [
+                'userId' => (string) $data['userId'],
+                'eventId' => $data['eventId'],
+                'started_at' => $now,
+            ]
+        );
+
         switch ($eventType) {
             case 'start':
+                $watchSession->status = 'active';
+                $watchSession->started_at = $now;
+                $watchSession->last_seen_at = $now;
                 break;
             case 'heartbeat':
+                $watchSession->status = 'active';
+                $watchSession->last_seen_at = $now;
                 break;
             case 'pause':
+                $watchSession->status = 'paused';
+                $watchSession->last_seen_at = $now;
                 break;
             case 'resume':
+                $watchSession->status = 'active';
+                $watchSession->last_seen_at = $now;
                 break;
             case 'seek':
+                $watchSession->current_position = $decodedPayload['position'] ?? $watchSession->current_position;
+                $watchSession->last_seen_at = $now;
                 break;
             case 'quality_change':
+                $watchSession->current_quality = $decodedPayload['quality'] ?? $watchSession->current_quality;
+                $watchSession->last_seen_at = $now;
                 break;
             case 'buffer_start':
+                $watchSession->status = 'paused'; // optional 'buffering' state
+                $watchSession->last_seen_at = $now;
                 break;
             case 'buffer_end':
+                $watchSession->status = 'active';
+                $watchSession->last_seen_at = $now;
                 break;
             case 'end':
+                $watchSession->status = 'ended';
+                $watchSession->last_seen_at = $now;
                 break;
         }
+
+        $watchSession->save();
 
         // Save event
         $event = Event::firstOrCreate([
@@ -87,54 +119,5 @@ class EventController extends Controller
             'message' => 'Event ingested successfully',
             'event' => $event,
         ], 201);
-    }
-
-    /**
-     * Return active session count for a given eventId
-     * GET /v1/events/{eventId}/active-sessions
-     */
-    public function activeSessions($eventId)
-    {
-        // A session is considered "active" if it has a heartbeat or other event in the last 30 seconds
-        $threshold = Carbon::now()->subSeconds(30);
-
-        $activeSessions = Event::whereJsonContains('payload->eventId', $eventId)
-            ->where('eventTimestamp', '>=', $threshold)
-            ->distinct('sessionId')
-            ->count('sessionId');
-
-        // @todo In the future we may want to change this to have a different response return if the active session doesn't actually exist
-        return response()->json([
-            'eventId' => $eventId,
-            'activeSessions' => $activeSessions,
-        ]);
-    }
-
-    /**
-     * Return session details for a given sessionId
-     * GET /v1/sessions/{sessionId}
-     */
-    public function sessionDetails($sessionId)
-    {
-        $events = Event::where('sessionId', $sessionId)
-            ->orderBy('eventTimestamp')
-            ->get();
-
-        if ($events->isEmpty()) {
-            return response()->json([
-                'message' => 'Session not found',
-            ], 404);
-        }
-
-        $firstEvent = $events->first();
-        $lastEvent = $events->last();
-        $duration = Carbon::parse($firstEvent->eventTimestamp)
-            ->diffInSeconds(Carbon::parse($lastEvent->eventTimestamp));
-
-        return response()->json([
-            'sessionId' => $sessionId,
-            'durationSeconds' => $duration,
-            'events' => $events,
-        ]);
     }
 }
