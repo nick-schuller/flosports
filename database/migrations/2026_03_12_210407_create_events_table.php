@@ -6,22 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
     public function up()
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
-            // @todo new migration to modify session_id and user_id into actual id fields once those tables are made outside of PoC            
-            $table->string('session_id');
-            $table->string('user_id');
-            $table->string('event_type');
-            $table->string('event_id');
-            $table->timestamp('event_timestamp')->nullable();
-            $table->timestamp('received_at')->nullable();
-            $table->json('payload')->nullable();
+            $table->string('sessionId');    // string for flexibility
+            $table->string('userId');       // string for flexibility
+            $table->string('eventType');
+            $table->string('eventId');
+            $table->timestamp('eventTimestamp')->nullable();
+            $table->timestamp('receivedAt')->nullable();
+            $table->json('payload');
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
     public function down()
     {
         Schema::dropIfExists('events');
