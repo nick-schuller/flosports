@@ -1,28 +1,30 @@
-/.phpunit.cache
-/bootstrap/ssr
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/resources/js/actions
-/resources/js/routes
-/resources/js/wayfinder
-/vendor
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-npm-debug.log
-yarn-error.log
-/auth.json
-/.fleet
-/.idea
-/.nova
-/.vscode
-/.zed
+# Commenting out the .gitignore since this is meant to be downloaded in its entirety for interview purposes.. this would be uncommented typically
+
+# /.phpunit.cache
+# /bootstrap/ssr
+# /node_modules
+# /public/build
+# /public/hot
+# /public/storage
+# /storage/*.key
+# /storage/pail
+# /resources/js/actions
+# /resources/js/routes
+# /resources/js/wayfinder
+# /vendor
+# .DS_Store
+# .env
+# .env.backup
+# .env.production
+# .phpactor.json
+# .phpunit.result.cache
+# Homestead.json
+# Homestead.yaml
+# npm-debug.log
+# yarn-error.log
+# /auth.json
+# /.fleet
+# /.idea
+# /.nova
+# /.vscode
+# /.zed
