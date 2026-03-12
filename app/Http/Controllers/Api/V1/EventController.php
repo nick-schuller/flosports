@@ -1,33 +1,28 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\API\v1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\WatchSession;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
-    /**
-     * Ingest an event.
-     * POST /v1/events
-     */
     public function ingest(Request $request)
     {
         try {
             $data = $request->validate([
-                'sessionId' => 'required',   // This needs to change to int eventually with next version and be |integer
-                'userId' => 'required',      // This needs to change to int eventually with next version and be |integer
-                'eventType' => 'required|string|in:start,heartbeat,pause,resume,seek,quality_change,buffer_start,buffer_end,end',   // These really should be individual events or an enum or something..
-                'eventId' => 'required',     // This should also correlate to some actual event table and be |integer
+                'sessionId' => 'required|string',
+                'userId' => 'required|string',
+                'eventType' => 'required|string|in:start,heartbeat,pause,resume,seek,quality_change,buffer_start,buffer_end,end',
+                'eventId' => 'required|string',
                 'eventTimestamp' => 'nullable|date',
                 'receivedAt' => 'nullable|date',
-                'payload' => 'required|string', // This should be a JSON string
+                'payload' => 'required|array', // JSON object from client
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Return validation errors as JSON with 422 status
             return response()->json([
                 'message' => 'Validation failed',
                 'error' => $e->errors(),
@@ -35,33 +30,39 @@ class EventController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'An unexpected error has occurred',
-                'error' => $e->getMessage(),    // This probably shouldn't just be dumped here for an actual prod app
+                'error' => $e->getMessage(),
             ], 500);
-        }
-
-        // Decode the JSON payload
-        $decodedPayload = json_decode($data['payload'], true);
-
-        if ($decodedPayload === null && json_last_error() !== JSON_ERROR_NONE) {
-            return response()->json([
-                'message' => 'Invalid JSON in payload',
-                'error' => json_last_error_msg(),
-            ], 422);
         }
 
         $eventType = $data['eventType'];
         $now = now();
 
-        // Upsert watch session for sessionId
-        $watchSession = WatchSession::firstOrNew(
-            ['sessionId' => (string) $data['sessionId']],
+        // Upsert the Event using eventId (idempotent)
+        $event = Event::updateOrCreate(
+            ['eventId' => $data['eventId']],
             [
-                'userId' => (string) $data['userId'],
-                'eventId' => $data['eventId'],
-                'started_at' => $now,
+                'sessionId' => $data['sessionId'],
+                'userId' => $data['userId'],
+                'eventType' => $data['eventType'],
+                'eventTimestamp' => $data['eventTimestamp'] ?? $now,
+                'receivedAt' => $data['receivedAt'] ?? $now,
+                'payload' => json_encode($data['payload']),
             ]
         );
 
+        // Upsert the WatchSession
+        $watchSession = WatchSession::firstOrNew(
+            ['sessionId' => $data['sessionId']],
+            [
+                'userId' => $data['userId'],
+                'eventId' => $data['eventId'],
+                'started_at' => $now,
+                'current_position' => $data['payload']['position'] ?? null,
+                'current_quality' => $data['payload']['quality'] ?? null,
+            ]
+        );
+
+        // Update WatchSession state based on event type
         switch ($eventType) {
             case 'start':
                 $watchSession->status = 'active';
@@ -81,15 +82,15 @@ class EventController extends Controller
                 $watchSession->last_seen_at = $now;
                 break;
             case 'seek':
-                $watchSession->current_position = $decodedPayload['position'] ?? $watchSession->current_position;
+                $watchSession->current_position = $data['payload']['position'] ?? $watchSession->current_position;
                 $watchSession->last_seen_at = $now;
                 break;
             case 'quality_change':
-                $watchSession->current_quality = $decodedPayload['quality'] ?? $watchSession->current_quality;
+                $watchSession->current_quality = $data['payload']['quality'] ?? $watchSession->current_quality;
                 $watchSession->last_seen_at = $now;
                 break;
             case 'buffer_start':
-                $watchSession->status = 'paused'; // optional 'buffering' state
+                $watchSession->status = 'paused'; // or 'buffering' if you add a state later
                 $watchSession->last_seen_at = $now;
                 break;
             case 'buffer_end':
@@ -104,20 +105,11 @@ class EventController extends Controller
 
         $watchSession->save();
 
-        // Save event
-        $event = Event::firstOrCreate([
-            'sessionId' => $data['sessionId'],
-            'userId' => $data['userId'],
-            'eventType' => $data['eventType'],
-            'eventId' => $data['eventId'],
-            'eventTimestamp' => $data['eventTimestamp'] ?? now(),
-            'receivedAt' => $data['receivedAt'] ?? now(),
-            'payload' => json_encode($data['payload']),
-        ]);
-
         return response()->json([
             'message' => 'Event ingested successfully',
-            'event' => $event,
+            'eventId' => $event->eventId,
+            'sessionId' => $watchSession->sessionId,
+            'status' => $watchSession->status,
         ], 201);
     }
 }

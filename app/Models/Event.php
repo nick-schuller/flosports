@@ -19,6 +19,10 @@ class Event extends Model
         'payload',
     ];
 
+    protected $casts = [
+        'payload' => 'array',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'id', 'userId');
