@@ -1,24 +1,48 @@
-How to use the things:
-* Checkout the master branch on an environment that already has the web stuff installed and running for you (apache, php) (another assumption here is whoever is testing this has that ready and it's expected)
+# How to use the things:
+* Checkout the master branch on an environment that already has the web stuff installed and running for you (apache, php) (another assumption here is whoever is testing this has that ready)
 * The sqlite database was uploaded in master so it should already be using everything. The .gitignores were commented out of course so all the files _should_ be in there and ready to go.
-* Start it up using ```php artisan serve```
-* Run tests using ```php artisan test```
+* Start it up using `php artisan serve`
+* Run tests using `php artisan test`
+* There's a postman collection added to the base directory too to make things easier as far the naming convention goes and testing things out located here: https://github.com/nick-schuller/flosports/blob/master/Flosports%20WatchSessionTracker.postman_collection.json
+* The endpoints are as follows if you don't want to use the postman collection:
+    * Ingestion
+        * **POST** `/events`
+    * Get active session count for an event
+        * **GET** `/watch-sessions/active-count/{eventId}`
+    * Get session details for a given session ID
+        * **GET** `/watch-sessions/{sessionId}`
+* JSON payload to use from provided PRD:
+  ```json
+    {
+        "sessionId": "abc-123",
+        "userId": "user-456",
+        "eventType": "heartbeat",
+        "eventId": "evt-789",
+        "eventTimestamp": "2026-02-10T19:32:15.123Z",
+        "receivedAt": "2026-02-10T19:32:15.450Z",
+        "payload": {
+            "eventId": "event-2026-wrestling-finals",
+            "position": 1832.5,
+            "quality": "1080p"
+        }
+    }
+    ```
 
-Assumptions: 
+# Assumptions: 
 * I have no idea whether or not the eventId in the base event is supposed to match up with the eventId in the payload, so I ended up using the eventId from the base event when creating both the regular event and the session. I assumed that perhaps
 they were supposed to be the same, and if not maybe the key for the name was supposed to be different? Or maybe they came from two different tables? Or maybe were just two different resources (or maybe it's maybelline?).
 * I assumed that all of the event types were listed at the time of writing, although the switch in the code leaves it pretty easy to add new ones in, despite this not being the best way to really do that directly in the controller.
 * I didn't write any code to automatically set a session as inactive if it has been sitting and hasn't received a heartbeat for a certain amount of time. We'd probably want to add in a job (laravel) or a message (symfony) to look through and de-activate sessions that have sat for too long, or even make like a mysql event and schedule it to run periodically. I see in the instructions it says that we're going to receive a heartbeat every 30 seconds but the code essentially ignores that right now. Perhaps the code that checks the active session count should been related to that as well.
 
   
-Tools and resources: 
+# Tools and resources: 
 * I used Visual Studio Code with a handful of extensions - Some themes that I already had in there, PHP intelephense, some syntax highlighting for Laravel / twig / Symfony (though I didn't end up going the Symfony route).
 * I also utilized an Ubuntu 24.04 Server VM that I already had up and running with some other Symfony / Laravel and LAMP stuff installed on it to make it a bit faster, that way I didn't have to install PHP and whatnot on my main Windows box.
 * In terms of AI usage, I relied heavily on ChatGPT for some of the quick "write me a controller for these requirements", "construct some routes and models for the same requirements". It created the majority of the boilerplate code and I did some tweaking
 here and there. It also did some rough drafts for the phpunit tests. All the git stuff was just command line on the Ubuntu box and connected to my github. 
 
 
-Trade-offs:
+# Trade-offs:
 * There should be a lot of things changed in the code from how it currently exists. As there was a pretty short timeframe here for development, I glazed over a lot of naming conventions that could better, as well as folder structure and endpoint naming that could probably be better. As far as
 data types and whatnot, I mostly just accepted what was given from AI in those cases to save time and resolved a few small runtime errors for messed up names or unexpected types during debugging. The PHP unit stuff the AI spit out also wasn't perfect as I generally don't expect it to be, and I needed to tweak it
 here and there. I tried using windsurf a bit for this and some of the inline copilot stuff, but it wasn't really giving me what I wanted so I quickly switched to a different tool (ChatGPT) to move things along. Of course I could've spent time trying to finagle the vscode plugins to make things work properly, but
@@ -32,7 +56,7 @@ use Symfony in this case, though I could've just as easily created the db myself
 
 
 
-Here are some additional notes I took while running into a few installation related things and how I resolved them:
+## Here are some additional notes I took while running into a few installation related things and how I resolved them:
 
 * Issue: Couple startup issues with just versioning of some files. "npm install" and "build" didn't want to work because of node version installed on my virtual machine.
   * Resolution: Used ChatGPT to quickly resolve the errors and explain the errors and provide the quick command for the solutions. These included
