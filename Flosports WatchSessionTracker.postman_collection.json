@@ -1,0 +1,125 @@
+{
+  "info": {
+    "_postman_id": "d245d4f2-9410-44a4-8fbf-3596c2d16c25",
+    "name": "Flosports WatchSessionTracker",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53157208",
+    "_collection_link": "https://go.postman.co/collection/53157208-d245d4f2-9410-44a4-8fbf-3596c2d16c25?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Add/Update event",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Successful POST request\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"sessionId\": \"abc-123\",\n    \"userId\": \"user-456\",\n    \"eventType\": \"start\",\n    \"eventId\": \"evt-789\",\n    \"eventTimestamp\": \"2026-02-10T19:32:15.123Z\",\n    \"receivedAt\": \"2026-02-10T19:32:15.450Z\",\n    \"payload\": {\n        \"eventId\": \"evt-789\",\n        \"position\": 1832.5,\n        \"quality\": \"1080p\"\n    }\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8000/v1/events",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "v1",
+            "events"
+          ]
+        },
+        "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+      },
+      "response": []
+    },
+    {
+      "name": "Get active session count for eventId",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Successful POST request\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"sessionId\": \"abc-123\",\n    \"userId\": \"user-456\",\n    \"eventType\": \"heartbeat\",\n    \"eventId\": \"evt-789\",\n    \"eventTimestamp\": \"2026-02-10T19:32:15.123Z\",\n    \"receivedAt\": \"2026-02-10T19:32:15.450Z\",\n    \"payload\": {\n        \"eventId\": \"evt-789\",\n        \"position\": 1832.5,\n        \"quality\": \"1080p\"\n    }\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8000/v1/events",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "v1",
+            "events"
+          ]
+        },
+        "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+      },
+      "response": []
+    },
+    {
+      "name": "Get session data for sessionId",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/v1/watch-sessions/abc-123",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "v1",
+            "watch-sessions",
+            "abc-123"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
