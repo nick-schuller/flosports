@@ -30,7 +30,7 @@
     ```
 
 # Assumptions: 
-* I have no idea whether or not the eventId in the base event is supposed to match up with the eventId in the payload, so I ended up using the eventId from the base event when creating both the regular event and the session. I assumed that perhaps
+* I have no idea whether or not the eventId in the base event is supposed to match up with the eventId in the payload (or maybe it is supposed to be a payloadId?), so I ended up using the eventId from the base event when creating both the regular event and the session. I assumed that perhaps
 they were supposed to be the same, and if not maybe the key for the name was supposed to be different? Or maybe they came from two different tables? Or maybe were just two different resources (or maybe it's maybelline?).
 * I assumed that all of the event types were listed at the time of writing, although the switch in the code leaves it pretty easy to add new ones in, despite this not being the best way to really do that directly in the controller.
 * I didn't write any code to automatically set a session as inactive if it has been sitting and hasn't received a heartbeat for a certain amount of time. We'd probably want to add in a job (laravel) or a message (symfony) to look through and de-activate sessions that have sat for too long, or even make like a mysql event and schedule it to run periodically. I see in the instructions it says that we're going to receive a heartbeat every 30 seconds but the code essentially ignores that right now. Perhaps the code that checks the active session count should been related to that as well.
@@ -54,7 +54,15 @@ there wasn't a ton of time allotted for this and I get that was also the point.
 * The ingestion system doesn't have any kind of retries in place, throttling in the event we get spammed or ddos'd
 * I thought about just storing stuff in a file and doing some comma delimited lists or something, but then I thought to myself the sqlite db that's just included with a laravel project init would probably be easier. That's also why I didn't
 use Symfony in this case, though I could've just as easily created the db myself but I'm lazy (I realize it just takes a couple commands to do that in Symfony but..ehhhh, I was only given 2 hours here!).
+* All of the API endpoints should have some kind of authentication on them and not allow just blind submission
+* Could have done better with sanitization of input from the front end instead of relying fully on the validator. This is typically handled anyway by Laravel but I like to be thorough.
+* Essentially, to keep this as uncomplex as possible, a lot of the things mentioned above were scrapped in favor of a working PoC. Having all 3 of those things engineered perfectly within 2 hours is impossible, at least to the degree that I feel would properly satisfy everyone. Realistically we'd want Redis to
+more efficiently handle some of the data and lower the latency (with persisting that data into storage with a job, possibly - just spitballing really), more usage of caching mechanisms to properly handle resubmissions of events and sessions. We'd want to add in some type of replication to try and satisfy the
+operational stakeholders, but getting that up and running would mean adding complexity as well. AWS EC2 instances with load balancing and replication would be nice as well. That way you can also scale more easily if need be and keep high uptime, but that's on a full functioning prod system and not a simple lightweight PoC like this.
 
+# Final Thoughts
+The time says about 2 hours, I think I roughly used maybe 3 hours total, a good hour or so was spent on typing up my thoughts after the fact and I think I was really close to 2 hours as far as the coding goes. The commit history timeline shows more time than that I imagine, but I took a lot of breaks in between - was doing laundry, handling an emergency with my Dad who lives in TN. So there are pretty long chunks of time between some commits where I wasn't actually at my desk working on things. I wanted to make sure to provide a good commit history that was all together. I could've rebased or edited the history but I wanted to just leave it as plain as possible. I added in some things like agent skills that I didn't end up using at all from Laravel Boost (I've never used those before and thought it might be fun, but it would've taken way too much time). I thought it was interesting that the engineering for stakeholders care about a slim,
+lead, clean system without complexity at all but operation and product wants a very robust, high uptime system
 
 
 ## Here are some additional notes I took while running into a few installation related things and how I resolved them:
