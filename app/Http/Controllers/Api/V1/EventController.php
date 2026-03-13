@@ -35,6 +35,9 @@ class EventController extends Controller
 
         $eventType = $data['eventType'];
         $now = now();
+        $decodedPayload = is_string($data['payload']) 
+            ? json_decode($data['payload'], true) 
+            : $data['payload'];
 
         // Upsert the Event using eventId (idempotent)
         $event = Event::updateOrCreate(
@@ -45,7 +48,7 @@ class EventController extends Controller
                 'eventType' => $data['eventType'],
                 'eventTimestamp' => $data['eventTimestamp'] ?? $now,
                 'receivedAt' => $data['receivedAt'] ?? $now,
-                'payload' => json_encode($data['payload']),
+                'payload' => $decodedPayload,
             ]
         );
 
