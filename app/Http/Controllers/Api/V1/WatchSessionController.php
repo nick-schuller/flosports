@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class WatchSessionController extends Controller
 {
     /**
-     * Return the number of active sessions for a given event.
+     * Return the number of active sessions for a given eventId.
      */
     public function activeCount($eventId)
     {
@@ -25,7 +25,7 @@ class WatchSessionController extends Controller
     }
 
     /**
-     * Return session details for a given session ID.
+     * Return session details for a given sessionId.
      */
     public function show($sessionId)
     {

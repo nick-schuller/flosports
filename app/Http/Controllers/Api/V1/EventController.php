@@ -11,6 +11,7 @@ class EventController extends Controller
 {
     public function ingest(Request $request)
     {
+        // Quick validation on the request and ensuring we are giving a reasonable response on failure
         try {
             $data = $request->validate([
                 'sessionId' => 'required|string',
@@ -32,14 +33,14 @@ class EventController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-
+        
         $eventType = $data['eventType'];
         $now = now();
         $decodedPayload = is_string($data['payload']) 
             ? json_decode($data['payload'], true) 
             : $data['payload'];
 
-        // Upsert the Event using eventId (idempotent)
+        // Upsert the Event using eventId
         $event = Event::updateOrCreate(
             ['eventId' => $data['eventId']],
             [
@@ -52,12 +53,12 @@ class EventController extends Controller
             ]
         );
 
-        // Upsert the WatchSession
+        // Upsert the WatchSession using sessionId
         $watchSession = WatchSession::firstOrNew(
             ['sessionId' => $data['sessionId']],
             [
                 'userId' => $data['userId'],
-                'eventId' => $data['eventId'],
+                'eventId' => $data['eventId'],  // Should this be using the eventId from the payload? Should those be the same in the example data?
                 'started_at' => $now,
                 'current_position' => $data['payload']['position'] ?? null,
                 'current_quality' => $data['payload']['quality'] ?? null,
@@ -65,6 +66,7 @@ class EventController extends Controller
         );
 
         // Update WatchSession state based on event type
+        // @todo Move this to a service.. refactor and decouple
         switch ($eventType) {
             case 'start':
                 $watchSession->status = 'active';
@@ -105,6 +107,7 @@ class EventController extends Controller
                 break;
         }
 
+        // Ensure the watch session is saved after the above shenanigans and return output
         $watchSession->save();
 
         return response()->json([
