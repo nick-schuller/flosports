@@ -1,5 +1,6 @@
 # How to use the things:
 * Checkout the master branch on an environment that already has the web stuff installed and running for you (apache, php) (another assumption here is whoever is testing this has that ready)
+    * `git clone -b master https://github.com/nick-schuller/flosports.git`
 * The sqlite database was uploaded in master so it should already be using everything. The .gitignores were commented out of course so all the files _should_ be in there and ready to go.
 * Start it up using `php artisan serve`
 * Run tests using `php artisan test`
