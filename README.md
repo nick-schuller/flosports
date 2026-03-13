@@ -5,7 +5,7 @@
 * Start it up using `php artisan serve`
 * Run tests using `php artisan test`
 * There's a postman collection added to the base directory too to make things easier as far the naming convention goes and testing things out located here: https://github.com/nick-schuller/flosports/blob/master/Flosports%20WatchSessionTracker.postman_collection.json
-* The endpoints are as follows if you don't want to use the postman collection:
+* The endpoints are as follows if you don't want to use the postman collection are below. When you run the `serve` command to start the server, it will tell you what the address will be (localhost with a port, typically http://localhost:8000)
     * Ingestion
         * **POST** `/v1/events`
     * Get active session count for an event
