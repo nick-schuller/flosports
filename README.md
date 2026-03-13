@@ -6,11 +6,11 @@
 * There's a postman collection added to the base directory too to make things easier as far the naming convention goes and testing things out located here: https://github.com/nick-schuller/flosports/blob/master/Flosports%20WatchSessionTracker.postman_collection.json
 * The endpoints are as follows if you don't want to use the postman collection:
     * Ingestion
-        * **POST** `/events`
+        * **POST** `/v1/events`
     * Get active session count for an event
-        * **GET** `/watch-sessions/active-count/{eventId}`
+        * **GET** `/v1/watch-sessions/active-count/{eventId}`
     * Get session details for a given session ID
-        * **GET** `/watch-sessions/{sessionId}`
+        * **GET** `/v1/watch-sessions/{sessionId}`
 * JSON payload to use from provided PRD:
   ```json
     {
