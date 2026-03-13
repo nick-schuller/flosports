@@ -18,7 +18,6 @@ Route::prefix('v1')->group(function () {
     // Event routing
     Route::post('/events', [EventController::class, 'ingest'])
         ->withoutMiddleware([VerifyCsrfToken::class]); // disable CSRF for POST
-    Route::get('/events/{eventId}/active-sessions', [EventController::class, 'activeSessions']);
     
     // Watch session routing
     // Get active session count for an event
