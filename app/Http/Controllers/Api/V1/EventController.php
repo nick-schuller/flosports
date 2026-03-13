@@ -54,7 +54,7 @@ class EventController extends Controller
         );
 
         // Upsert the WatchSession using sessionId
-        $watchSession = WatchSession::firstOrNew(
+        $watchSession = WatchSession::updateOrCreate(
             ['sessionId' => $data['sessionId']],
             [
                 'userId' => $data['userId'],
